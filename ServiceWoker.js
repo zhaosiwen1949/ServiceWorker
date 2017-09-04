@@ -1,4 +1,14 @@
-﻿var CACHE_NAME = "offline_test_v1";
+﻿var CACHE_NAME = "offline_test_v5";
+
+function canLoad(request){
+	if(/\.action$/.test(request.url.split('?')[0]) ||
+		/\.json$/.test(request.url.split('?')[0]) ||
+		/\.css$/.test(request.url.split('?')[0])){
+		return true;
+	}else{
+		return false;
+	}
+}
 
 self.addEventListener("install", function(event){
 	console.log("install");
@@ -10,22 +20,35 @@ self.addEventListener("install", function(event){
 self.addEventListener("activate", function(event){
 	console.log("activate");
 	event.waitUntil(
-		return new Promise.all(
-			caches.keys().map(function(cacheName){
-				if(CACHE_NAME !== cacheName && cacheName.startsWith("offline_test")) {
-					return caches.delete(cacheName);
-				}
-			});
-		);
+		caches.keys().then(function(cacheNames){
+			return Promise.all(
+				cacheNames.map(function(cacheName){
+					if(CACHE_NAME !== cacheName && cacheName.startsWith("offline_test")) {
+						return caches.delete(cacheName);
+					}
+				})
+			);
+		})
 	);
 });
 
 self.addEventListener("fetch",function(event){
-	console.log(event.request.url);
-	evnet.responseWith(
+	event.respondWith(
 		fetch(event.request).then(function(res){
+			if(/\.json/.test(event.request.url)){
+				console.log("JSON request");
+				console.log(event.request.method);
+				console.log(event.request.url.split('?')[0]);
+			}
+			//console.log(event.request.url);
+			//console.log(event.request.method);
+
 			caches.open(CACHE_NAME).then(function(cache){
-				cache.put(event.request,res);
+				if(event.request.method === 'GET' &&
+					canLoad(event.request) ){
+					//console.log(event.request.url);
+					cache.put(event.request,res);	
+				}
 			});
 			return res.clone();
 		}).catch(function(){
