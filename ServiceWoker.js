@@ -35,11 +35,11 @@ self.addEventListener("activate", function(event){
 self.addEventListener("fetch",function(event){
 	event.respondWith(
 		fetch(event.request).then(function(res){
-			if(/\.json/.test(event.request.url)){
+			/*if(/\.json/.test(event.request.url)){
 				console.log("JSON request");
 				console.log(event.request.method);
 				console.log(event.request.url.split('?')[0]);
-			}
+			}*/
 			//console.log(event.request.url);
 			//console.log(event.request.method);
 
